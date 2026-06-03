@@ -6,6 +6,7 @@ struct HistoryPane: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Conversation.createdAt, order: .reverse) private var conversations: [Conversation]
     @State private var conversationToDelete: Conversation?
+    @State private var searchText = ""
 
     var body: some View {
         GeometryReader { geo in
@@ -23,6 +24,7 @@ struct HistoryPane: View {
                     VStack(alignment: .leading, spacing: 0) {
                         header
                         newConversationButton
+                        searchBar
                         conversationList
                     }
                 }
@@ -98,18 +100,62 @@ struct HistoryPane: View {
         .padding(.bottom, 8)
     }
 
+    // MARK: - Search
+
+    private var searchBar: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.inkTertiary)
+
+            TextField("Search conversations", text: $searchText)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .font(.system(size: 15))
+                .foregroundColor(.inkPrimary)
+                .tint(accentColor)
+
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.inkTertiary)
+                }
+                .accessibilityLabel("Clear conversation search")
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.glassFill)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .strokeBorder(Color.glassBorder, lineWidth: 1)
+                )
+        )
+        .padding(.horizontal, 16)
+        .padding(.bottom, 6)
+    }
+
     // MARK: - Conversation list
 
     private var conversationList: some View {
         ScrollView {
             LazyVStack(spacing: 2) {
-                if !todayConversations.isEmpty {
-                    sectionHeader("Today")
-                    ForEach(todayConversations) { row(for: $0) }
-                }
-                if !earlierConversations.isEmpty {
-                    sectionHeader("Earlier")
-                    ForEach(earlierConversations) { row(for: $0) }
+                if filteredConversations.isEmpty {
+                    emptyConversationList
+                } else {
+                    if !todayConversations.isEmpty {
+                        sectionHeader("Today")
+                        ForEach(todayConversations) { row(for: $0) }
+                    }
+                    if !earlierConversations.isEmpty {
+                        sectionHeader("Earlier")
+                        ForEach(earlierConversations) { row(for: $0) }
+                    }
                 }
             }
             .padding(.horizontal, 10)
@@ -167,6 +213,28 @@ struct HistoryPane: View {
         )
     }
 
+    private var emptyConversationList: some View {
+        VStack(spacing: 8) {
+            Image(systemName: searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "bubble.left.and.bubble.right" : "magnifyingglass")
+                .font(.system(size: 22, weight: .medium))
+                .foregroundColor(.inkTertiary)
+
+            Text(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "No conversations yet" : "No matching conversations")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(.inkSecondary)
+
+            if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Text("Try a title or message from the conversation.")
+                    .font(.system(size: 13))
+                    .foregroundColor(.inkTertiary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 24)
+        .padding(.top, 40)
+    }
+
     private func sectionHeader(_ title: String) -> some View {
         Text(title.uppercased())
             .font(.system(size: 11, weight: .semibold))
@@ -180,12 +248,16 @@ struct HistoryPane: View {
 
     // MARK: - Grouping
 
+    private var filteredConversations: [Conversation] {
+        conversations.filter { $0.matchesSearch(searchText) }
+    }
+
     private var todayConversations: [Conversation] {
-        conversations.filter { Calendar.current.isDateInToday($0.createdAt) }
+        filteredConversations.filter { Calendar.current.isDateInToday($0.createdAt) }
     }
 
     private var earlierConversations: [Conversation] {
-        conversations.filter { !Calendar.current.isDateInToday($0.createdAt) }
+        filteredConversations.filter { !Calendar.current.isDateInToday($0.createdAt) }
     }
 
     private var accentColor: Color {
