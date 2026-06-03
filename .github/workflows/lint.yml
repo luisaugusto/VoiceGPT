@@ -1,0 +1,41 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  XCODE_PATH: /Applications/Xcode_26.app
+  SCHEME: VoiceGPT
+  DESTINATION: platform=iOS Simulator,OS=latest,name=iPhone 16 Pro
+
+jobs:
+  lint:
+    name: Warnings as Errors
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s ${{ env.XCODE_PATH }}
+
+      - name: Resolve packages
+        run: |
+          xcodebuild -project VoiceGPT.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -resolvePackageDependencies
+
+      - name: Build with warnings as errors
+        run: |
+          xcodebuild build \
+            -project VoiceGPT.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -destination "${{ env.DESTINATION }}" \
+            SWIFT_TREAT_WARNINGS_AS_ERRORS=YES \
+            GCC_TREAT_WARNINGS_AS_ERRORS=YES \
+            -quiet \
+            | xcpretty || exit 1

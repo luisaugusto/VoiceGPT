@@ -1,10 +1,3 @@
-//
-//  VoiceGPTApp.swift
-//  VoiceGPT
-//
-//  Created by Luis Augusto on 6/3/26.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -12,12 +5,17 @@ import SwiftData
 struct VoiceGPTApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Conversation.self,
+            Message.self,
+            AppSettings.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+        let config = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .none
+        )
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(for: schema, configurations: [config])
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }

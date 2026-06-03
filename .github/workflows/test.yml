@@ -1,0 +1,56 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  XCODE_PATH: /Applications/Xcode_26.app
+  SCHEME: VoiceGPT
+  DESTINATION: platform=iOS Simulator,OS=latest,name=iPhone 16 Pro
+
+jobs:
+  test:
+    name: Unit & UI Tests
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s ${{ env.XCODE_PATH }}
+
+      - name: Resolve packages
+        run: |
+          xcodebuild -project VoiceGPT.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -resolvePackageDependencies
+
+      - name: Boot simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j \
+            | jq -r '.devices | to_entries[] | select(.key | contains("iOS")) | .value[] | select(.name == "iPhone 16 Pro" and .isAvailable == true) | .udid' \
+            | head -1)
+          xcrun simctl boot "$UDID" || true
+          echo "SIMULATOR_UDID=$UDID" >> $GITHUB_ENV
+
+      - name: Run tests
+        run: |
+          xcodebuild test \
+            -project VoiceGPT.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -destination "id=${{ env.SIMULATOR_UDID }}" \
+            -resultBundlePath TestResults.xcresult \
+            | xcpretty --report junit --output test-results.xml || exit 1
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            TestResults.xcresult
+            test-results.xml
