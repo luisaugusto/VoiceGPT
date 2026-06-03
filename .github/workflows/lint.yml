@@ -28,12 +28,27 @@ jobs:
             -scheme ${{ env.SCHEME }} \
             -resolvePackageDependencies
 
-      - name: Build with warnings as errors
+      - name: Build and check for warnings
         run: |
+          set -o pipefail
           xcodebuild build \
             -project VoiceGPT.xcodeproj \
             -scheme ${{ env.SCHEME }} \
             -destination "${{ env.DESTINATION }}" \
-            SWIFT_TREAT_WARNINGS_AS_ERRORS=YES \
-            GCC_TREAT_WARNINGS_AS_ERRORS=YES \
-            -quiet
+            2>&1 | tee /tmp/build.log
+
+          # Fail on any warning in our own Swift source files.
+          # Excludes package dependency paths so their -suppress-warnings flags
+          # don't conflict and their own warnings don't count against us.
+          WARNINGS=$(grep "warning:" /tmp/build.log \
+            | grep "\.swift:[0-9]" \
+            | grep -v "/SourcePackages/" \
+            | grep -v "/.build/" \
+            || true)
+
+          if [ -n "$WARNINGS" ]; then
+            echo "Warnings found in source files:"
+            echo "$WARNINGS"
+            exit 1
+          fi
+          echo "No warnings found in source files."
