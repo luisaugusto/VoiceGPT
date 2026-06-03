@@ -8,14 +8,12 @@ on:
 
 env:
   SCHEME: VoiceGPT
-  DESTINATION: platform=iOS Simulator,OS=latest,name=iPhone 16 Pro
+  DESTINATION: platform=iOS Simulator,OS=latest,name=iPhone 17
 
 jobs:
   build:
     name: Build
-    # Use a self-hosted runner tagged 'xcode-26' (your Mac).
-    # Switch to 'macos-15' once GitHub-hosted runners ship Xcode 26.
-    runs-on: self-hosted
+    runs-on: macos-26
 
     steps:
       - name: Checkout

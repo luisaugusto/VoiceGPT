@@ -8,14 +8,12 @@ on:
 
 env:
   SCHEME: VoiceGPT
-  DEVICE_NAME: iPhone 16 Pro
+  DEVICE_NAME: iPhone 17
 
 jobs:
   test:
     name: Unit & UI Tests
-    # Use a self-hosted runner tagged 'xcode-26' (your Mac).
-    # Switch to 'macos-15' once GitHub-hosted runners ship Xcode 26.
-    runs-on: self-hosted
+    runs-on: macos-26
 
     steps:
       - name: Checkout
