@@ -25,7 +25,7 @@ final class AudioRecorder: NSObject {
 
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.record, mode: .default, options: .allowBluetooth)
+            try session.setCategory(.record, mode: .default, options: .allowBluetoothHFP)
             try session.setActive(true)
             recorder = try AVAudioRecorder(url: url, settings: settings)
             recorder?.record()

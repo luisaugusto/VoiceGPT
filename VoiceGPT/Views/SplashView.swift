@@ -50,9 +50,16 @@ struct SplashView: View {
                 )
 
                 // Title
-                (Text("Voice").font(.title2).fontWeight(.regular) +
-                 Text("GPT").font(.title2).fontWeight(.bold).foregroundColor(accent))
-                    .foregroundColor(.inkPrimary)
+                HStack(spacing: 0) {
+                    Text("Voice")
+                        .font(.title2)
+                        .fontWeight(.regular)
+                        .foregroundColor(.inkPrimary)
+                    Text("GPT")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(accent)
+                }
 
                 // Loading bar
                 ZStack(alignment: .leading) {
