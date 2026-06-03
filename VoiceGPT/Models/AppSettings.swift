@@ -4,6 +4,7 @@ import SwiftData
 final class AppSettings {
     var apiKey: String = ""
     var personalContext: String = ""
+    var speechVoice: String = "alloy"
     var accentColor: String = "indigo"
     var vibe: String = "calm"
     var pttStyle: String = "ring"

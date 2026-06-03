@@ -59,7 +59,7 @@ final class AppViewModel: NSObject {
                     conversation.title = String(firstUserText.prefix(50))
                 }
 
-                let audioData = try await openAI.speak(text: assistantText)
+                let audioData = try await openAI.speak(text: assistantText, voice: settings.speechVoice)
                 await MainActor.run { playAudio(data: audioData) }
 
             } catch {
