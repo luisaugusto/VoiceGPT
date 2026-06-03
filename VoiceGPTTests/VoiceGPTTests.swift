@@ -11,6 +11,31 @@ import Testing
 
 struct VoiceGPTTests {
 
+    @Test func conversationSearchMatchesTitleCaseInsensitively() async throws {
+        let conversation = Conversation(title: "Trip Planning")
+
+        #expect(conversation.matchesSearch("trip"))
+        #expect(conversation.matchesSearch("  PLANNING  "))
+    }
+
+    @Test func conversationSearchMatchesAnyMessageCaseInsensitively() async throws {
+        let conversation = Conversation(title: "Untitled")
+        let firstMessage = Message(role: "user", text: "Can you summarize this article?", conversation: conversation)
+        let secondMessage = Message(role: "assistant", text: "Here are the key takeaways.", conversation: conversation)
+        conversation.messages.append(firstMessage)
+        conversation.messages.append(secondMessage)
+
+        #expect(conversation.matchesSearch("KEY takeaways"))
+        #expect(conversation.matchesSearch("summarize"))
+    }
+
+    @Test func conversationSearchReturnsFalseWhenTitleAndMessagesDoNotMatch() async throws {
+        let conversation = Conversation(title: "Dinner Ideas")
+        conversation.messages.append(Message(role: "user", text: "Find a quick pasta recipe.", conversation: conversation))
+
+        #expect(!conversation.matchesSearch("workout"))
+    }
+
     @Test func failedActiveConversationDeletionRollsBackAndRestoresSelection() async throws {
         let vm = AppViewModel()
         let conversation = Conversation()
