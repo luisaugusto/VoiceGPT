@@ -7,21 +7,22 @@ on:
     branches: [main]
 
 env:
-  XCODE_PATH: /Applications/Xcode_26.app
   SCHEME: VoiceGPT
   DESTINATION: platform=iOS Simulator,OS=latest,name=iPhone 16 Pro
 
 jobs:
   build:
     name: Build
-    runs-on: macos-15
+    # Use a self-hosted runner tagged 'xcode-26' (your Mac).
+    # Switch to 'macos-15' once GitHub-hosted runners ship Xcode 26.
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -s ${{ env.XCODE_PATH }}
+      - name: Show Xcode version
+        run: xcodebuild -version
 
       - name: Resolve packages
         run: |
@@ -35,5 +36,4 @@ jobs:
             -project VoiceGPT.xcodeproj \
             -scheme ${{ env.SCHEME }} \
             -destination "${{ env.DESTINATION }}" \
-            -quiet \
-            | xcpretty || exit 1
+            -quiet
