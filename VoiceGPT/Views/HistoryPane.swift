@@ -5,6 +5,7 @@ struct HistoryPane: View {
     @Environment(AppViewModel.self) private var vm
     @Environment(\.modelContext) private var context
     @Query(sort: \Conversation.createdAt, order: .reverse) private var conversations: [Conversation]
+    @State private var conversationToDelete: Conversation?
 
     var body: some View {
         GeometryReader { geo in
@@ -29,6 +30,17 @@ struct HistoryPane: View {
 
                 Spacer()
             }
+        }
+        .alert("Delete conversation?", isPresented: deleteConfirmationPresented, presenting: conversationToDelete) { conversation in
+            Button("Delete", role: .destructive) {
+                vm.deleteConversation(conversation, context: context)
+                conversationToDelete = nil
+            }
+            Button("Cancel", role: .cancel) {
+                conversationToDelete = nil
+            }
+        } message: { _ in
+            Text("This permanently deletes the conversation and all of its messages. This action cannot be undone.")
         }
     }
 
@@ -135,6 +147,24 @@ struct HistoryPane: View {
                     )
             )
         }
+        .contextMenu {
+            Button(role: .destructive) {
+                conversationToDelete = conv
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
+
+    private var deleteConfirmationPresented: Binding<Bool> {
+        Binding(
+            get: { conversationToDelete != nil },
+            set: { isPresented in
+                if !isPresented {
+                    conversationToDelete = nil
+                }
+            }
+        )
     }
 
     private func sectionHeader(_ title: String) -> some View {

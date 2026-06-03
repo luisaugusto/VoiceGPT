@@ -78,6 +78,38 @@ final class AppViewModel: NSObject {
         withAnimation { isHistoryOpen = false }
     }
 
+    func deleteConversation(_ conversation: Conversation, context: ModelContext) {
+        deleteConversation(
+            conversation,
+            delete: { context.delete(conversation) },
+            save: { try context.save() },
+            rollback: { context.rollback() }
+        )
+    }
+
+    func deleteConversation(
+        _ conversation: Conversation,
+        delete: () -> Void,
+        save: () throws -> Void,
+        rollback: () -> Void
+    ) {
+        let previouslyActiveConversation = activeConversation
+
+        if activeConversation?.id == conversation.id {
+            activeConversation = nil
+        }
+
+        delete()
+
+        do {
+            try save()
+        } catch {
+            rollback()
+            activeConversation = previouslyActiveConversation
+            errorMessage = "Unable to delete conversation: \(error.localizedDescription)"
+        }
+    }
+
     private func ensureConversation(context: ModelContext) -> Conversation {
         if let existing = activeConversation { return existing }
         let conv = Conversation()
