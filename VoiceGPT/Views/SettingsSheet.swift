@@ -60,14 +60,14 @@ struct SettingsSheet: View {
 
             HStack(spacing: 6) {
                 Circle()
-                    .fill(settings.apiKey.isEmpty ? Color.inkTertiary : Color.green)
+                    .fill(settings.hasAPIKey ? Color.green : Color.inkTertiary)
                     .frame(width: 7, height: 7)
-                Text(settings.apiKey.isEmpty ? "No key set" : "Key stored locally")
+                Text(settings.hasAPIKey ? "Key stored in Keychain" : "No key set")
                     .font(.system(size: 13))
                     .foregroundColor(.inkSecondary)
             }
 
-            Text("Your key is stored only on this device and never synced.")
+            Text("Your key is stored in the iOS Keychain and never synced.")
                 .font(.system(size: 12))
                 .foregroundColor(.inkTertiary)
         }
