@@ -70,6 +70,24 @@ struct VoiceGPTTests {
         #expect(vm.activeConversation == nil)
         #expect(vm.errorMessage == nil)
     }
+
+    @Test func cleanedConversationTitleRemovesAIFormatting() async throws {
+        let title = OpenAIService.cleanedTitle("  \"Planning a Kyoto Trip.\"  ")
+
+        #expect(title == "Planning a Kyoto Trip")
+    }
+
+    @Test func emptyCleanedConversationTitleFallsBackToDefault() async throws {
+        let title = OpenAIService.cleanedTitle("  ...  ")
+
+        #expect(title == "New conversation")
+    }
+
+    @Test func cleanedConversationTitleLimitsLength() async throws {
+        let title = OpenAIService.cleanedTitle(String(repeating: "a", count: 80))
+
+        #expect(title.count == 60)
+    }
 }
 
 private enum TestError: LocalizedError {

@@ -55,9 +55,11 @@ final class AppViewModel: NSObject {
                 context.insert(assistantMsg)
                 conversation.messages.append(assistantMsg)
 
-                if conversation.title == "New conversation", let firstUserText = conversation.sortedMessages.first?.text {
-                    conversation.title = String(firstUserText.prefix(50))
-                }
+                updateTitleIfNeeded(
+                    for: conversation,
+                    firstUserMessage: userText,
+                    firstAssistantResponse: assistantText
+                )
 
                 let audioData = try await openAI.speak(text: assistantText)
                 await MainActor.run { playAudio(data: audioData) }
@@ -116,6 +118,34 @@ final class AppViewModel: NSObject {
         context.insert(conv)
         activeConversation = conv
         return conv
+    }
+
+    private func updateTitleIfNeeded(
+        for conversation: Conversation,
+        firstUserMessage: String,
+        firstAssistantResponse: String
+    ) {
+        guard conversation.title == "New conversation", conversation.messages.count == 2 else { return }
+
+        Task {
+            do {
+                let title = try await openAI.generateConversationTitle(
+                    firstUserMessage: firstUserMessage,
+                    firstAssistantResponse: firstAssistantResponse
+                )
+                await MainActor.run {
+                    if conversation.title == "New conversation" {
+                        conversation.title = title
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    if conversation.title == "New conversation" {
+                        conversation.title = OpenAIService.cleanedTitle(firstUserMessage)
+                    }
+                }
+            }
+        }
     }
 
     private func playAudio(data: Data) {

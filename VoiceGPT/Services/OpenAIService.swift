@@ -49,6 +49,39 @@ final class OpenAIService {
         return result.choices.first?.message.content ?? ""
     }
 
+    func generateConversationTitle(firstUserMessage: String, firstAssistantResponse: String) async throws -> String {
+        guard let client else { throw VoiceGPTError.noAPIKey }
+
+        let titlePrompt = """
+        Create a short, specific title for this conversation.
+        - Use both the user's first message and the assistant's first response.
+        - Keep it under 7 words.
+        - Do not use quotation marks or a trailing period.
+
+        User: \(firstUserMessage)
+
+        Assistant: \(firstAssistantResponse)
+        """
+
+        let query = ChatQuery(
+            messages: [.user(.init(content: .string(titlePrompt)))],
+            model: Self.chatModel
+        )
+        let result = try await client.chats(query: query)
+        return Self.cleanedTitle(result.choices.first?.message.content)
+    }
+
+    static func cleanedTitle(_ title: String?) -> String {
+        guard let title else { return "New conversation" }
+
+        let cleaned = title
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "\"'“”‘’."))
+
+        guard !cleaned.isEmpty else { return "New conversation" }
+        return String(cleaned.prefix(60))
+    }
+
     func speak(text: String) async throws -> Data {
         guard let client else { throw VoiceGPTError.noAPIKey }
         let query = AudioSpeechQuery(
