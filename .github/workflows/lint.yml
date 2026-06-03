@@ -8,7 +8,7 @@ on:
 
 env:
   SCHEME: VoiceGPT
-  DESTINATION: platform=iOS Simulator,OS=latest,name=iPhone 17
+  DESTINATION: platform=iOS Simulator,OS=latest,name=iPhone 17,arch=arm64
 
 jobs:
   lint:
