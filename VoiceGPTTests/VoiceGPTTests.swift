@@ -11,6 +11,76 @@ import Testing
 
 struct VoiceGPTTests {
 
+    @Test func chatResponseParserExtractsAssistantTextAndMemoryUpdate() async throws {
+        let rawResponse = """
+        {"assistant_response":"Absolutely — I can help with that.","memory_update":"The user is gluten free."}
+        """
+
+        let parsed = OpenAIService.parseChatResponse(rawResponse)
+
+        #expect(parsed.assistantText == "Absolutely — I can help with that.")
+        #expect(parsed.memoryUpdate == "The user is gluten free.")
+    }
+
+    @Test func chatResponseParserFallsBackToPlainTextWithoutMemoryUpdate() async throws {
+        let parsed = OpenAIService.parseChatResponse("Sure, let's do it.")
+
+        #expect(parsed.assistantText == "Sure, let's do it.")
+        #expect(parsed.memoryUpdate == nil)
+    }
+
+    @Test func savingPersonalContextUpdateAppendsNewDurableContext() async throws {
+        let vm = AppViewModel()
+        let settings = AppSettings()
+        settings.personalContext = "The user prefers brief answers."
+
+        var didSave = false
+        vm.savePersonalContextUpdate(
+            "The user is gluten free.",
+            settings: settings,
+            save: { didSave = true },
+            rollback: {}
+        )
+
+        #expect(didSave)
+        #expect(settings.personalContext == "The user prefers brief answers.\nThe user is gluten free.")
+    }
+
+    @Test func failedPersonalContextUpdateSaveRestoresPreviousContext() async throws {
+        let vm = AppViewModel()
+        let settings = AppSettings()
+        settings.personalContext = "The user prefers brief answers."
+
+        var didRollback = false
+        vm.savePersonalContextUpdate(
+            "The user is gluten free.",
+            settings: settings,
+            save: { throw TestError.saveFailed },
+            rollback: { didRollback = true }
+        )
+
+        #expect(didRollback)
+        #expect(settings.personalContext == "The user prefers brief answers.")
+        #expect(vm.errorMessage == "Unable to save personal context: Save failed")
+    }
+
+    @Test func duplicatePersonalContextUpdateIsIgnored() async throws {
+        let vm = AppViewModel()
+        let settings = AppSettings()
+        settings.personalContext = "The user is gluten free."
+
+        var didSave = false
+        vm.savePersonalContextUpdate(
+            "The user is gluten free.",
+            settings: settings,
+            save: { didSave = true },
+            rollback: {}
+        )
+
+        #expect(!didSave)
+        #expect(settings.personalContext == "The user is gluten free.")
+    }
+
     @Test func failedActiveConversationDeletionRollsBackAndRestoresSelection() async throws {
         let vm = AppViewModel()
         let conversation = Conversation()
