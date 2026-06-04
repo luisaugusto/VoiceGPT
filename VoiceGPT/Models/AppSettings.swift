@@ -9,6 +9,7 @@ final class AppSettings {
 
     var hasAPIKey: Bool = KeychainStore.openAIAPIKey()?.isEmpty == false
     var personalContext: String = ""
+    var chatbotPersonality: String = ""
     var speechVoice: String = "alloy"
     var accentColor: String = defaultAccentColor
     var vibe: String = defaultVibe
