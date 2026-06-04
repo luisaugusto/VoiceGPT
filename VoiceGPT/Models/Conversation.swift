@@ -24,4 +24,17 @@ final class Conversation {
     var preview: String {
         sortedMessages.last?.text.prefix(60).description ?? ""
     }
+
+    func matchesSearch(_ query: String) -> Bool {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedQuery.isEmpty else { return true }
+
+        if title.localizedCaseInsensitiveContains(trimmedQuery) {
+            return true
+        }
+
+        return messages.contains { message in
+            message.text.localizedCaseInsensitiveContains(trimmedQuery)
+        }
+    }
 }

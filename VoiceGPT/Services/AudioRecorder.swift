@@ -12,8 +12,13 @@ final class AudioRecorder: NSObject {
     }
 
     func startRecording() {
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("voicegpt-\(UUID().uuidString).m4a")
+        let url: URL
+        do {
+            url = try SecureFileStore.uniqueFileURL(fileExtension: "m4a")
+        } catch {
+            isRecording = false
+            return
+        }
         recordingURL = url
 
         let settings: [String: Any] = [
@@ -31,7 +36,9 @@ final class AudioRecorder: NSObject {
             recorder?.record()
             isRecording = true
         } catch {
-            print("AudioRecorder: failed to start – \(error)")
+            SecureFileStore.removeItem(at: url)
+            recordingURL = nil
+            isRecording = false
         }
     }
 
