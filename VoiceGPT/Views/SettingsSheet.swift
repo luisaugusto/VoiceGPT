@@ -12,6 +12,7 @@ struct SettingsSheet: View {
                 VStack(alignment: .leading, spacing: 28) {
                     apiKeySection
                     contextSection
+                    personalitySection
                     Divider().background(Color.glassBorder)
                     appearanceSection
                 }
@@ -87,6 +88,36 @@ struct SettingsSheet: View {
                 .scrollContentBackground(.hidden)
 
             Text("Added as a system message at the start of each new conversation.")
+                .font(.system(size: 12))
+                .foregroundColor(.inkTertiary)
+        }
+    }
+
+    // MARK: - Chatbot Personality
+
+    private var personalitySection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            label("Chatbot Personality")
+
+            ZStack(alignment: .topLeading) {
+                TextEditor(text: $settings.chatbotPersonality)
+                    .font(.body)
+                    .frame(minHeight: 110)
+                    .padding(12)
+                    .background(glassField)
+                    .scrollContentBackground(.hidden)
+
+                if settings.chatbotPersonality.isEmpty {
+                    Text("You are a cheerful bot with a bright and positive personality.")
+                        .font(.body)
+                        .foregroundColor(.inkTertiary)
+                        .padding(.horizontal, 17)
+                        .padding(.vertical, 20)
+                        .allowsHitTesting(false)
+                }
+            }
+
+            Text("Describe the voice, tone, and response style you want your chatbot to use.")
                 .font(.system(size: 12))
                 .foregroundColor(.inkTertiary)
         }

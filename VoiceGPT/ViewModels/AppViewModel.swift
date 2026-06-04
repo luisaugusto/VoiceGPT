@@ -48,7 +48,8 @@ final class AppViewModel: NSObject {
 
                 let assistantText = try await openAI.chat(
                     history: conversation.sortedMessages,
-                    personalContext: settings.personalContext
+                    personalContext: settings.personalContext,
+                    chatbotPersonality: settings.chatbotPersonality
                 )
 
                 let assistantMsg = Message(role: "assistant", text: assistantText, conversation: conversation)
