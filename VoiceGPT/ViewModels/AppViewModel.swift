@@ -125,7 +125,8 @@ final class AppViewModel: NSObject {
         firstUserMessage: String,
         firstAssistantResponse: String
     ) {
-        guard conversation.title == "New conversation", conversation.messages.count == 2 else { return }
+        guard conversation.title == "New conversation" else { return }
+        guard Self.hasOnlyFirstUserAssistantExchange(in: conversation.sortedMessages) else { return }
 
         Task {
             do {
@@ -146,6 +147,16 @@ final class AppViewModel: NSObject {
                 }
             }
         }
+    }
+
+    static func hasOnlyFirstUserAssistantExchange(in sortedMessages: [Message]) -> Bool {
+        let uniqueMessages = sortedMessages.reduce(into: [Message]()) { result, message in
+            guard !result.contains(where: { $0.id == message.id }) else { return }
+            result.append(message)
+        }
+
+        guard uniqueMessages.count == 2 else { return false }
+        return uniqueMessages[0].role == "user" && uniqueMessages[1].role == "assistant"
     }
 
     private func playAudio(data: Data) {

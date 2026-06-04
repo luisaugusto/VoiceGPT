@@ -71,6 +71,24 @@ struct VoiceGPTTests {
         #expect(vm.errorMessage == nil)
     }
 
+    @Test func firstExchangeDetectionIgnoresDuplicateRelationshipEntries() async throws {
+        let conversation = Conversation()
+        let userMessage = Message(role: "user", text: "How do I plan Kyoto?", conversation: conversation)
+        let assistantMessage = Message(role: "assistant", text: "Start with temples and transit.", conversation: conversation)
+
+        let sortedMessages = [userMessage, userMessage, assistantMessage, assistantMessage]
+
+        #expect(AppViewModel.hasOnlyFirstUserAssistantExchange(in: sortedMessages))
+    }
+
+    @Test func firstExchangeDetectionRejectsAdditionalMessages() async throws {
+        let userMessage = Message(role: "user", text: "How do I plan Kyoto?")
+        let assistantMessage = Message(role: "assistant", text: "Start with temples and transit.")
+        let followUpMessage = Message(role: "user", text: "What about food?")
+
+        #expect(!AppViewModel.hasOnlyFirstUserAssistantExchange(in: [userMessage, assistantMessage, followUpMessage]))
+    }
+
     @Test func cleanedConversationTitleRemovesAIFormatting() async throws {
         let title = OpenAIService.cleanedTitle("  \"Planning a Kyoto Trip.\"  ")
 
