@@ -40,6 +40,7 @@ final class AppViewModel: NSObject {
 
         Task {
             do {
+                defer { SecureFileStore.removeItem(at: audioURL) }
                 let userText = try await openAI.transcribe(audioURL: audioURL)
                 let conversation = ensureConversation(context: context)
                 let userMsg = Message(role: "user", text: userText, conversation: conversation)
@@ -60,7 +61,7 @@ final class AppViewModel: NSObject {
                     conversation.title = String(firstUserText.prefix(50))
                 }
 
-                let audioData = try await openAI.speak(text: assistantText)
+                let audioData = try await openAI.speak(text: assistantText, voice: settings.speechVoice)
                 await MainActor.run { playAudio(data: audioData) }
 
             } catch {
@@ -120,18 +121,24 @@ final class AppViewModel: NSObject {
     }
 
     private func playAudio(data: Data) {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("response.mp3")
+        var playbackURL: URL?
         do {
-            try data.write(to: url)
+            let url = try SecureFileStore.uniqueFileURL(fileExtension: "mp3")
+            playbackURL = url
+            try SecureFileStore.write(data, to: url)
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
             try AVAudioSession.sharedInstance().setActive(true)
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             playerDelegate = AudioPlayerDelegate { [weak self] in
+                SecureFileStore.removeItem(at: url)
                 self?.pttState = .idle
             }
             audioPlayer?.delegate = playerDelegate
             audioPlayer?.play()
         } catch {
+            if let playbackURL {
+                SecureFileStore.removeItem(at: playbackURL)
+            }
             pttState = .idle
         }
     }

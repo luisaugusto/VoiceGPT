@@ -13,6 +13,7 @@ struct SettingsSheet: View {
                     apiKeySection
                     contextSection
                     personalitySection
+                    voiceSection
                     Divider().background(Color.glassBorder)
                     appearanceSection
                 }
@@ -61,14 +62,14 @@ struct SettingsSheet: View {
 
             HStack(spacing: 6) {
                 Circle()
-                    .fill(settings.apiKey.isEmpty ? Color.inkTertiary : Color.green)
+                    .fill(settings.hasAPIKey ? Color.green : Color.inkTertiary)
                     .frame(width: 7, height: 7)
-                Text(settings.apiKey.isEmpty ? "No key set" : "Key stored locally")
+                Text(settings.hasAPIKey ? "Key stored in Keychain" : "No key set")
                     .font(.system(size: 13))
                     .foregroundColor(.inkSecondary)
             }
 
-            Text("Your key is stored only on this device and never synced.")
+            Text("Your key is stored in the iOS Keychain and never synced.")
                 .font(.system(size: 12))
                 .foregroundColor(.inkTertiary)
         }
@@ -118,6 +119,30 @@ struct SettingsSheet: View {
             }
 
             Text("Describe the voice, tone, and response style you want your chatbot to use.")
+                .font(.system(size: 12))
+                .foregroundColor(.inkTertiary)
+        }
+    }
+
+    // MARK: - Voice
+
+    private var voiceSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            label("Assistant Voice")
+
+            Picker("Assistant Voice", selection: $settings.speechVoice) {
+                ForEach(OpenAIService.supportedSpeechVoices, id: \.self) { voice in
+                    Text(voice.capitalized).tag(voice)
+                }
+            }
+            .pickerStyle(.menu)
+            .tint(Color.accent(settings.accentColor))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(glassField)
+
+            Text("Choose the OpenAI text-to-speech voice used for spoken chatbot responses.")
                 .font(.system(size: 12))
                 .foregroundColor(.inkTertiary)
         }

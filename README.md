@@ -11,7 +11,7 @@ A voice-first AI chat app for iOS 26, built with SwiftUI and SwiftData. Hold the
 - **Conversation history** in a slide-in pane, persisted locally
 - **Liquid Glass design** — iOS 26 materials, radial gradient wallpapers, breathing animations
 - **Themeable** — 4 accent colors, 3 background vibes, 3 PTT button styles
-- **Zero iCloud sync** — API key and all data stored on-device only via SwiftData
+- **Zero iCloud sync** — API key stored in the iOS Keychain; conversations and preferences stored on-device only via SwiftData
 
 ---
 
@@ -63,7 +63,7 @@ graph TD
 ```mermaid
 erDiagram
     AppSettings {
-        String apiKey
+        Bool hasAPIKey
         String personalContext
         String accentColor
         String vibe
@@ -153,7 +153,7 @@ VoiceGPT/
 │   ├── VoiceGPTApp.swift        # @main — ModelContainer, cloudKitDatabase: .none
 │   └── ContentView.swift        # Splash → Main router
 ├── Models/
-│   ├── AppSettings.swift        # SwiftData model: API key, theme prefs
+│   ├── AppSettings.swift        # SwiftData model: Keychain API-key flag, theme prefs
 │   ├── Conversation.swift       # SwiftData model: title, createdAt, messages[]
 │   └── Message.swift            # SwiftData model: role, text, createdAt
 ├── Services/
@@ -192,7 +192,7 @@ VoiceGPT/
 
 3. **Run on a simulator or device** — no configuration needed to build.
 
-4. **Add your OpenAI API key** — tap the hamburger menu → gear icon → paste your key. It is stored in SwiftData on-device only.
+4. **Add your OpenAI API key** — tap the hamburger menu → gear icon → paste your key. It is stored in the iOS Keychain and never synced.
 
 ---
 

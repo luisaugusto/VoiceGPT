@@ -4,6 +4,8 @@ import OpenAI
 @Observable
 final class OpenAIService {
     static let chatModel: Model = "gpt-5.4"
+    static let defaultSpeechVoice = AudioSpeechQuery.AudioSpeechVoice.alloy.rawValue
+    static let supportedSpeechVoices = AudioSpeechQuery.AudioSpeechVoice.allCases.map(\.rawValue)
 
     private var client: OpenAI?
 
@@ -53,17 +55,21 @@ final class OpenAIService {
         return result.choices.first?.message.content ?? ""
     }
 
-    func speak(text: String) async throws -> Data {
+    func speak(text: String, voice speechVoice: String) async throws -> Data {
         guard let client else { throw VoiceGPTError.noAPIKey }
         let query = AudioSpeechQuery(
             model: .tts_1,
             input: text,
-            voice: .alloy,
+            voice: Self.speechVoice(for: speechVoice),
             responseFormat: .mp3,
             speed: 1.0
         )
         let result = try await client.audioCreateSpeech(query: query)
         return result.audio
+    }
+
+    private static func speechVoice(for rawValue: String) -> AudioSpeechQuery.AudioSpeechVoice {
+        AudioSpeechQuery.AudioSpeechVoice(rawValue: rawValue) ?? .alloy
     }
 }
 
