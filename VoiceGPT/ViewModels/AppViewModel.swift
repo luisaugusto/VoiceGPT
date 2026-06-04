@@ -47,12 +47,18 @@ final class AppViewModel: NSObject {
                 context.insert(userMsg)
                 conversation.messages.append(userMsg)
 
-                let assistantText = try await openAI.chat(
+                let chatResponse = try await openAI.chat(
                     history: conversation.sortedMessages,
                     personalContext: settings.personalContext,
                     chatbotPersonality: settings.chatbotPersonality
                 )
+                savePersonalContextUpdate(
+                    chatResponse.memoryUpdate,
+                    settings: settings,
+                    save: { try context.save() }
+                )
 
+                let assistantText = chatResponse.assistantText
                 let assistantMsg = Message(role: "assistant", text: assistantText, conversation: conversation)
                 context.insert(assistantMsg)
                 conversation.messages.append(assistantMsg)
@@ -111,6 +117,22 @@ final class AppViewModel: NSObject {
             rollback()
             activeConversation = previouslyActiveConversation
             errorMessage = "Unable to delete conversation: \(error.localizedDescription)"
+        }
+    }
+
+    func savePersonalContextUpdate(
+        _ update: String?,
+        settings: AppSettings,
+        save: () throws -> Void
+    ) {
+        let previousContext = settings.personalContext
+        guard let update, settings.appendPersonalContext(update) else { return }
+
+        do {
+            try save()
+        } catch {
+            settings.personalContext = previousContext
+            errorMessage = "Unable to save personal context: \(error.localizedDescription)"
         }
     }
 

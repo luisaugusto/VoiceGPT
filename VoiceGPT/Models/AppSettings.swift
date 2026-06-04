@@ -20,11 +20,27 @@ final class AppSettings {
         }
     }
 
+    init() {
+        self.hasAPIKey = KeychainStore.openAIAPIKey()?.isEmpty == false
+    }
+
     func refreshAPIKeyStatus() {
         hasAPIKey = KeychainStore.openAIAPIKey()?.isEmpty == false
     }
 
-    init() {
-        self.hasAPIKey = KeychainStore.openAIAPIKey()?.isEmpty == false
+    @discardableResult
+    func appendPersonalContext(_ newContext: String) -> Bool {
+        let cleanedContext = newContext.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanedContext.isEmpty else { return false }
+
+        let existingContext = personalContext.trimmingCharacters(in: .whitespacesAndNewlines)
+        if existingContext.localizedCaseInsensitiveContains(cleanedContext) {
+            return false
+        }
+
+        personalContext = existingContext.isEmpty
+            ? cleanedContext
+            : "\(existingContext)\n\(cleanedContext)"
+        return true
     }
 }

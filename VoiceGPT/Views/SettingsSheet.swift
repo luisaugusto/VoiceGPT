@@ -88,7 +88,7 @@ struct SettingsSheet: View {
                 .background(glassField)
                 .scrollContentBackground(.hidden)
 
-            Text("Added as a system message at the start of each new conversation.")
+            Text("Used in every conversation. VoiceGPT can automatically add durable preferences and details you mention, like dietary restrictions.")
                 .font(.system(size: 12))
                 .foregroundColor(.inkTertiary)
         }
