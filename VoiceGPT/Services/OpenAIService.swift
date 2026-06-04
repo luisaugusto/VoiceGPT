@@ -28,13 +28,17 @@ final class OpenAIService {
         return result.text
     }
 
-    func chat(history: [Message], personalContext: String) async throws -> String {
+    func chat(history: [Message], personalContext: String, chatbotPersonality: String) async throws -> String {
         guard let client else { throw VoiceGPTError.noAPIKey }
 
         var params: [ChatQuery.ChatCompletionMessageParam] = []
 
         if !personalContext.isEmpty {
             params.append(.system(.init(content: .textContent(personalContext))))
+        }
+
+        if !chatbotPersonality.isEmpty {
+            params.append(.system(.init(content: .textContent("Chatbot personality: \(chatbotPersonality)"))))
         }
 
         for message in history {
