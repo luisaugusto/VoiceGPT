@@ -59,7 +59,7 @@ final class OpenAIService {
         return result.text
     }
 
-    func chat(history: [Message], personalContext: String) async throws -> OpenAIChatResponse {
+    func chat(history: [Message], personalContext: String, chatbotPersonality: String) async throws -> OpenAIChatResponse {
         guard let client else { throw VoiceGPTError.noAPIKey }
 
         var params: [ChatQuery.ChatCompletionMessageParam] = [
@@ -68,6 +68,10 @@ final class OpenAIService {
 
         if !personalContext.isEmpty {
             params.append(.system(.init(content: .textContent("Known user context:\n\(personalContext)"))))
+        }
+
+        if !chatbotPersonality.isEmpty {
+            params.append(.system(.init(content: .textContent("Chatbot personality: \(chatbotPersonality)"))))
         }
 
         for message in history {

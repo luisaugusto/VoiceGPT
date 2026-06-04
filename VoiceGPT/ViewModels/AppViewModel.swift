@@ -49,7 +49,8 @@ final class AppViewModel: NSObject {
 
                 let chatResponse = try await openAI.chat(
                     history: conversation.sortedMessages,
-                    personalContext: settings.personalContext
+                    personalContext: settings.personalContext,
+                    chatbotPersonality: settings.chatbotPersonality
                 )
                 savePersonalContextUpdate(
                     chatResponse.memoryUpdate,
