@@ -209,6 +209,7 @@ struct MainView: View {
 
     private func bootstrapSettings() async {
         if let existing = settingsArray.first {
+            existing.refreshAPIKeyStatus()
             settings = existing
         } else {
             let s = AppSettings()
