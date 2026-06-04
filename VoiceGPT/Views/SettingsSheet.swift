@@ -13,8 +13,6 @@ struct SettingsSheet: View {
                     apiKeySection
                     contextSection
                     voiceSection
-                    Divider().background(Color.glassBorder)
-                    appearanceSection
                 }
                 .padding(20)
             }
@@ -93,7 +91,6 @@ struct SettingsSheet: View {
         }
     }
 
-
     // MARK: - Voice
 
     private var voiceSection: some View {
@@ -118,70 +115,6 @@ struct SettingsSheet: View {
         }
     }
 
-    // MARK: - Appearance
-
-    private var appearanceSection: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            label("Appearance")
-
-            // Accent color
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Accent")
-                    .font(.system(size: 13))
-                    .foregroundColor(.inkSecondary)
-                HStack(spacing: 12) {
-                    ForEach(["indigo", "blue", "cyan", "purple"], id: \.self) { name in
-                        Circle()
-                            .fill(Color.accent(name))
-                            .frame(width: 30, height: 30)
-                            .overlay(
-                                Circle()
-                                    .strokeBorder(.white, lineWidth: 2.5)
-                                    .opacity(settings.accentColor == name ? 1 : 0)
-                            )
-                            .onTapGesture { settings.accentColor = name }
-                    }
-                }
-            }
-
-            // Vibe
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Background")
-                    .font(.system(size: 13))
-                    .foregroundColor(.inkSecondary)
-                HStack(spacing: 10) {
-                    ForEach(["calm", "vibrant", "moody"], id: \.self) { v in
-                        choiceChip(v, isSelected: settings.vibe == v) {
-                            settings.vibe = v
-                        }
-                    }
-                }
-            }
-
-            // PTT style
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Button style")
-                    .font(.system(size: 13))
-                    .foregroundColor(.inkSecondary)
-                HStack(spacing: 10) {
-                    ForEach(["ring", "orb", "wave"], id: \.self) { s in
-                        choiceChip(s, isSelected: settings.pttStyle == s) {
-                            settings.pttStyle = s
-                        }
-                    }
-                }
-            }
-
-            // Dark mode
-            Toggle(isOn: $settings.isDarkMode) {
-                Text("Dark mode")
-                    .font(.system(size: 15))
-                    .foregroundColor(.inkPrimary)
-            }
-            .tint(Color.accent(settings.accentColor))
-        }
-    }
-
     // MARK: - Helpers
 
     private func label(_ text: String) -> some View {
@@ -189,20 +122,6 @@ struct SettingsSheet: View {
             .font(.system(size: 12, weight: .semibold))
             .tracking(0.6)
             .foregroundColor(.inkSecondary)
-    }
-
-    private func choiceChip(_ title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Text(title.capitalized)
-            .font(.system(size: 13, weight: .medium))
-            .foregroundColor(isSelected ? .white : .inkSecondary)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 7)
-            .background(
-                Capsule()
-                    .fill(isSelected ? Color.accent(settings.accentColor) : Color.glassFill)
-                    .overlay(Capsule().strokeBorder(Color.glassBorder, lineWidth: 1))
-            )
-            .onTapGesture { action() }
     }
 
     private var glassField: some View {

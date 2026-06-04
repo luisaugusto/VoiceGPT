@@ -3,6 +3,7 @@ import SwiftData
 
 struct MainView: View {
     @Environment(AppViewModel.self) private var vm
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var context
     @Query private var settingsArray: [AppSettings]
 
@@ -10,7 +11,7 @@ struct MainView: View {
     @State private var scrollProxy: ScrollViewProxy?
 
     private var accent: Color {
-        Color.accent(settings?.accentColor ?? "indigo")
+        Color.accent(settings?.accentColor ?? AppSettings.defaultAccentColor)
     }
 
     var body: some View {
@@ -18,8 +19,8 @@ struct MainView: View {
         ZStack(alignment: .bottom) {
             // Wallpaper
             WallpaperView(
-                vibe: settings?.vibe ?? "calm",
-                isDark: settings?.isDarkMode ?? true
+                vibe: AppSettings.defaultVibe,
+                isDark: colorScheme == .dark
             )
 
             // Main content
@@ -33,7 +34,7 @@ struct MainView: View {
             if let s = settings {
                 PTTDock(
                     pttState: vm.pttState,
-                    style: s.pttStyle,
+                    style: AppSettings.defaultPTTStyle,
                     accent: accent,
                     onPress: {
                         Task { await handlePTTPress(settings: s) }
@@ -85,10 +86,8 @@ struct MainView: View {
                 SettingsSheet(settings: s)
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
-                    .preferredColorScheme(s.isDarkMode ? .dark : .light)
             }
         }
-        .preferredColorScheme(settings?.isDarkMode ?? true ? .dark : .light)
         .task { await bootstrapSettings() }
     }
 
@@ -210,12 +209,20 @@ struct MainView: View {
     private func bootstrapSettings() async {
         if let existing = settingsArray.first {
             existing.refreshAPIKeyStatus()
+            applyFixedAppearance(to: existing)
             settings = existing
         } else {
             let s = AppSettings()
+            applyFixedAppearance(to: s)
             context.insert(s)
             settings = s
         }
+    }
+
+    private func applyFixedAppearance(to settings: AppSettings) {
+        settings.accentColor = AppSettings.defaultAccentColor
+        settings.vibe = AppSettings.defaultVibe
+        settings.pttStyle = AppSettings.defaultPTTStyle
     }
 
     private func handlePTTPress(settings: AppSettings) async {

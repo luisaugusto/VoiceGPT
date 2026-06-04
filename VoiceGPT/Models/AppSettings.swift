@@ -3,13 +3,16 @@ import SwiftData
 
 @Model
 final class AppSettings {
+    static let defaultAccentColor = "indigo"
+    static let defaultVibe = "calm"
+    static let defaultPTTStyle = "ring"
+
     var hasAPIKey: Bool = KeychainStore.openAIAPIKey()?.isEmpty == false
     var personalContext: String = ""
     var speechVoice: String = "alloy"
-    var accentColor: String = "indigo"
-    var vibe: String = "calm"
-    var pttStyle: String = "ring"
-    var isDarkMode: Bool = true
+    var accentColor: String = defaultAccentColor
+    var vibe: String = defaultVibe
+    var pttStyle: String = defaultPTTStyle
 
     var apiKey: String {
         get { KeychainStore.openAIAPIKey() ?? "" }
