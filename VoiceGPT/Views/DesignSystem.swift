@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Hex color initializer
 
@@ -28,10 +29,25 @@ extension Color {
     static let glassFillStrong = Color(red: 40/255, green: 44/255, blue: 66/255).opacity(0.55)
     static let glassBorder     = Color.white.opacity(0.16)
 
-    // Ink (dark mode)
-    static let inkPrimary   = Color.white.opacity(0.96)
-    static let inkSecondary = Color(hex: "ebeeff").opacity(0.62)
-    static let inkTertiary  = Color(hex: "ebeeff").opacity(0.34)
+    // Ink
+    static let inkPrimary = Color.adaptive(
+        light: Color(hex: "111827").opacity(0.94),
+        dark: Color.white.opacity(0.96)
+    )
+    static let inkSecondary = Color.adaptive(
+        light: Color(hex: "374151").opacity(0.82),
+        dark: Color(hex: "ebeeff").opacity(0.62)
+    )
+    static let inkTertiary = Color.adaptive(
+        light: Color(hex: "4b5563").opacity(0.58),
+        dark: Color(hex: "ebeeff").opacity(0.34)
+    )
+
+    static func adaptive(light: Color, dark: Color) -> Color {
+        Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
+        })
+    }
 
     // Accent palette
     static func accent(_ name: String) -> Color {
