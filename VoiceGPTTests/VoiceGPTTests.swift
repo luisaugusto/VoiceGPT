@@ -38,8 +38,7 @@ struct VoiceGPTTests {
         vm.savePersonalContextUpdate(
             "The user is gluten free.",
             settings: settings,
-            save: { didSave = true },
-            rollback: {}
+            save: { didSave = true }
         )
 
         #expect(didSave)
@@ -51,15 +50,11 @@ struct VoiceGPTTests {
         let settings = AppSettings()
         settings.personalContext = "The user prefers brief answers."
 
-        var didRollback = false
         vm.savePersonalContextUpdate(
             "The user is gluten free.",
             settings: settings,
-            save: { throw TestError.saveFailed },
-            rollback: { didRollback = true }
+            save: { throw TestError.saveFailed }
         )
-
-        #expect(didRollback)
         #expect(settings.personalContext == "The user prefers brief answers.")
         #expect(vm.errorMessage == "Unable to save personal context: Save failed")
     }
@@ -73,8 +68,7 @@ struct VoiceGPTTests {
         vm.savePersonalContextUpdate(
             "The user is gluten free.",
             settings: settings,
-            save: { didSave = true },
-            rollback: {}
+            save: { didSave = true }
         )
 
         #expect(!didSave)

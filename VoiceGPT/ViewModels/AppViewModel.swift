@@ -53,8 +53,7 @@ final class AppViewModel: NSObject {
                 savePersonalContextUpdate(
                     chatResponse.memoryUpdate,
                     settings: settings,
-                    save: { try context.save() },
-                    rollback: { context.rollback() }
+                    save: { try context.save() }
                 )
 
                 let assistantText = chatResponse.assistantText
@@ -120,8 +119,7 @@ final class AppViewModel: NSObject {
     func savePersonalContextUpdate(
         _ update: String?,
         settings: AppSettings,
-        save: () throws -> Void,
-        rollback: () -> Void
+        save: () throws -> Void
     ) {
         let previousContext = settings.personalContext
         guard let update, settings.appendPersonalContext(update) else { return }
@@ -130,7 +128,6 @@ final class AppViewModel: NSObject {
             try save()
         } catch {
             settings.personalContext = previousContext
-            rollback()
             errorMessage = "Unable to save personal context: \(error.localizedDescription)"
         }
     }
